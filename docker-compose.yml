@@ -1,0 +1,58 @@
+services:
+  cribbage-be:
+    image: ghcr.io/blingusblongus/cribbage-be:latest
+    container_name: cribbage-be
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  cribbage-fe:
+    image: ghcr.io/blingusblongus/cribbage-fe:latest
+    container_name: cribbage-fe
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  weight-stats-be:
+    image: ghcr.io/blingusblongus/weight-stats-be:latest
+    container_name: weight-stats-be
+    environment:
+      - PORT=8083
+      - DB_PATH=/data/weight-stats.db
+      - WATCH_DIR=/watch
+      - NTFY_TOPIC=https://ntfy.blingusblongus.com/weight
+      - GIN_MODE=release
+    volumes:
+      - ${HOME}/weight-stats-be/data:/data
+      - ${HOME}/sync/weight-stats:/watch:ro
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  weight-stats-fe:
+    image: ghcr.io/blingusblongus/weight-stats-fe:latest
+    container_name: weight-stats-fe
+    ports:
+      - "8084:80"
+    depends_on:
+      - weight-stats-be
+    volumes:
+      - ${HOME}/weight-stats-fe/.htpasswd:/etc/nginx/.htpasswd:ro
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Check for updates every 30 seconds, only update containers with watchtower label, cleanup old images
+    command: --interval 30 --label-enable --cleanup
+    restart: unless-stopped
