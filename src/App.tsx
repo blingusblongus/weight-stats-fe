@@ -51,6 +51,7 @@ export default function App() {
     return weightRolling.map(
       (w, i): CombinedPoint => ({
         date: w.date,
+        ts: new Date(w.date).getTime(),
         weight: w.value,
         weightAvg: w.avg,
         leanMass: leanMassRolling[i].value,
