@@ -14,6 +14,7 @@ import { format } from "date-fns";
 
 interface CombinedPoint {
   date: string;
+  ts: number;
   weight: number;
   weightAvg: number | null;
   leanMass: number;
@@ -90,7 +91,10 @@ export function WeightChart({ data, windowDays }: WeightChartProps) {
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis
-              dataKey="date"
+              dataKey="ts"
+              type="number"
+              scale="time"
+              domain={["dataMin", "dataMax"]}
               tickFormatter={(v) => format(new Date(v), "M/d")}
               stroke="var(--color-muted-foreground)"
               fontSize={12}
